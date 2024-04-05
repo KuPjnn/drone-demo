@@ -13,7 +13,7 @@ public class DemoController {
 
     @GetMapping
     public List<String> getListString() {
-        return Arrays.asList("Demo", "Long");
+        return Arrays.asList("Demo", "Long", "Oanh", "Maria Ozawa", "Miku");
     }
 
 }

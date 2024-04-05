@@ -1,0 +1,47 @@
+kind: pipeline
+type: docker
+name: test_drone
+
+steps:
+  - name: maven build
+    image: maven:3.8.3-openjdk-17
+    pull: if-not-exists
+    volumes:
+      - name: maven-build
+        path: /root/testDrone
+      - name: maven-cache
+        path: /root/.m2
+    commands:
+      - mvn -v
+      - mvn clean install -DskipTests=true
+      - cp target/*.jar /root/testDrone
+      - cp Dockerfile /root/testDrone
+      - echo "Maven build DONE."
+
+  - name: deploy
+    pull: if-not-exists
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: SSH_HOST
+      port: 22
+      username:
+        from_secret: SSH_USER
+      password:
+        from_secret: SSH_PASSWORD
+      script:
+        - cd /root/testDrone
+        - ls -a
+        - docker rm -f drone-demo
+        - docker rmi 27042021/drone-demo:latest
+        - docker build -t 27042021/drone-demo:latest .
+        - docker run --name drone-demo -p 8083:8083 -d 27042021/drone-demo:latest
+        - echo "Deploy DONE."
+
+volumes:
+  - name: maven-build
+    host:
+      path: /root/testDrone
+  - name: maven-cache
+    host:
+      path: /root/drone-cache
