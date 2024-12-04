@@ -10,4 +10,4 @@ services:
     environment:
       - SERVER_PORT:8083
     ports:
-      - "8000-8001:8083"
+      - "8081-8082:8083"
