@@ -16,6 +16,7 @@ steps:
       - mvn clean install -DskipTests=true
       - cp target/*.jar /root/testDrone
       - cp Dockerfile /root/testDrone
+      - cp docker-compose.yaml /root/testDrone
       - echo "Maven build DONE."
 
   - name: deploy
@@ -32,10 +33,13 @@ steps:
       script:
         - cd /root/testDrone
         - ls -a
-        - docker rm -f drone-demo
-        - docker rmi 27042021/drone-demo:latest
-        - docker build -t 27042021/drone-demo:latest .
-        - docker run --name drone-demo -p 8083:8083 -d 27042021/drone-demo:latest
+#        - docker rm -f drone-demo
+#        - docker rmi localhost:5000/drone-demo:latest
+#        - docker build -t localhost:5000/drone-demo:latest .
+#        - docker run --name drone-demo -p 8083:8083 -d localhost:5000/drone-demo:latest
+        - docker build -t localhost:5000/drone-demo:latest .
+        - docker compose -f docker-compose.yaml pull
+        - docker compose -f docker-compose.yaml up -d --no-deps --build app
         - echo "Deploy DONE."
 
 volumes:

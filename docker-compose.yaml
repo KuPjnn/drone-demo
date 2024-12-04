@@ -1,0 +1,13 @@
+version: '3'
+services:
+  drone-demo:
+    image: localhost:5000/drone-demo:latest
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+    environment:
+      - SERVER_PORT:8083
+    ports:
+      - "8080-8081:8083"
