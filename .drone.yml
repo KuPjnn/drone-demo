@@ -4,7 +4,7 @@ name: test_drone
 
 steps:
   - name: maven build
-    image: maven:3.8.3-openjdk-17
+    image: maven:latest
     pull: if-not-exists
     volumes:
       - name: maven-build
@@ -33,13 +33,8 @@ steps:
       script:
         - cd /root/testDrone
         - ls -a
-#        - docker rm -f drone-demo
-#        - docker rmi localhost:5000/drone-demo:latest
-#        - docker build -t localhost:5000/drone-demo:latest .
-#        - docker run --name drone-demo -p 8083:8083 -d localhost:5000/drone-demo:latest
         - docker build -t localhost:5000/drone-demo:latest .
-        - docker compose -f docker-compose.yaml pull
-        - docker compose -f docker-compose.yaml up -d --no-deps --build app
+        - docker compose -f docker-compose.yaml up -d --no-deps --build
         - echo "Deploy DONE."
 
 volumes:
