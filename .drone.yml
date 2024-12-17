@@ -34,7 +34,8 @@ steps:
         - cd /root/testDrone
         - ls -a
         - docker build -t localhost:5000/drone-demo:latest .
-        - docker compose -f docker-compose.yaml up -d --no-deps --build
+        - docker compose -f docker-compose.yaml up -d
+        - docker images --filter "dangling=true" -q | xargs -r docker rmi
         - echo "Deploy DONE."
 
 volumes:
