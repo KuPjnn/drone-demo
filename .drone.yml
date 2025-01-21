@@ -1,47 +1,44 @@
 kind: pipeline
-type: docker
-name: test_drone
-
+type: ssh
+name: deploy
+server:
+  host:
+    from_secret: SSH_HOST
+  user:
+    from_secret: SSH_USER
+  password:
+    from_secret: SSH_PASSWORD
 steps:
   - name: maven build
-    image: maven:latest
-    pull: if-not-exists
-    volumes:
-      - name: maven-build
-        path: /root/testDrone
-      - name: maven-cache
-        path: /root/.m2
     commands:
-      - mvn -v
-      - mvn clean install -DskipTests=true
-      - cp target/*.jar /root/testDrone
-      - cp Dockerfile /root/testDrone
-      - cp docker-compose.yaml /root/testDrone
+      - docker run --rm 
+        -v /root/testDrone:/root/build 
+        -v /root/drone-cache:/root/.m2 
+        -v $(pwd):/workspace
+        -w /workspace 
+        maven:latest 
+        bash -c "mvn -v 
+        && mvn clean install -DskipTests=true 
+        && cp target/*.jar /root/build 
+        && cp Dockerfile /root/build 
+        && cp docker-compose.yaml /root/build"
+      - ls -la /root/testDrone
       - echo "Maven build DONE."
-
-  - name: deploy
-    pull: if-not-exists
-    image: appleboy/drone-ssh
-    settings:
-      host:
-        from_secret: SSH_HOST
-      port: 22
-      username:
-        from_secret: SSH_USER
-      password:
-        from_secret: SSH_PASSWORD
-      script:
-        - cd /root/testDrone
-        - ls -a
-        - docker build -t localhost:5000/drone-demo:latest .
-        - docker compose -f docker-compose.yaml up -d
-        - docker images --filter "dangling=true" -q | xargs -r docker rmi
-        - echo "Deploy DONE."
-
-volumes:
-  - name: maven-build
-    host:
-      path: /root/testDrone
-  - name: maven-cache
-    host:
-      path: /root/drone-cache
+  - name: docker build
+    commands:
+      - cd /root/testDrone
+      - ls -a
+      - docker build -t my-drone-demo:latest .
+  - name: docker up
+    commands:
+      - docker compose -f docker-compose.yaml up -d
+  - name: remove dangling images
+    commands:
+      - docker images --filter "dangling=true" -q | xargs -r docker rmi
+  - name: clean up tmp files
+    commands:
+      - rm -rf /root/testDrone
+      - echo "Temporary files cleaned."
+  - name: deploy done
+    commands:
+      - echo "Deploy DONE. "

@@ -1,7 +1,8 @@
 version: '3'
 services:
   drone-demo:
-    image: localhost:5000/drone-demo:latest
+    image: my-drone-demo:latest
+    #container_name: my-drone-demo #Docker requires each container to have a unique name. Remove the custom name to scale the service.
     deploy:
       replicas: 2
       update_config:
